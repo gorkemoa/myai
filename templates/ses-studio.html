@@ -1,0 +1,555 @@
+{% extends "layout.html" %}
+
+{% block title %}Ses Stüdyosu - MyAI Studio{% endblock %}
+
+{% block extra_styles %}
+.audio-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+.audio-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(168, 85, 247, 0.3);
+    box-shadow: 0 8px 24px rgba(168, 85, 247, 0.15);
+}
+.waveform {
+    width: 100%;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    margin: 1rem 0;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+.waveform::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, rgba(168, 85, 247, 0.05) 0%, rgba(168, 85, 247, 0) 100%);
+    pointer-events: none;
+}
+.player-controls {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 1rem;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+}
+.player-button {
+    background: rgba(168, 85, 247, 0.1);
+    border: 1px solid rgba(168, 85, 247, 0.2);
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+.player-button::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(168, 85, 247, 0) 100%);
+    pointer-events: none;
+}
+.player-button:hover {
+    background: rgba(168, 85, 247, 0.2);
+    transform: scale(1.05);
+}
+.player-button:active {
+    transform: scale(0.95);
+}
+.time-display {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(0, 0, 0, 0.2);
+    padding: 0.25rem 0.75rem;
+    border-radius: 8px;
+    min-width: 100px;
+    text-align: center;
+    letter-spacing: 0.05em;
+}
+.volume-control {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    margin-left: auto;
+}
+.volume-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100px;
+    height: 4px;
+    background: rgba(168, 85, 247, 0.2);
+    border-radius: 2px;
+    outline: none;
+    position: relative;
+}
+.volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    background: rgb(168, 85, 247);
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+.volume-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    background: rgb(192, 132, 252);
+}
+.volume-slider::-webkit-slider-runnable-track {
+    height: 4px;
+    background: rgba(168, 85, 247, 0.2);
+    border-radius: 2px;
+}
+.audio-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+.audio-title {
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+}
+.audio-meta {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.audio-duration {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.125rem 0.5rem;
+    background: rgba(168, 85, 247, 0.1);
+    border-radius: 4px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+}
+{% endblock %}
+
+{% block user_info %}
+<span class="text-sm text-gray-400">
+    Kalan Süre: <span class="text-purple-400" id="remainingTime">{{ '∞' if user.is_premium else (1800 - user.daily_audio_seconds)|string + ' saniye' }}</span>
+</span>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Başlık -->
+    <div class="text-center mb-12">
+        <h1 class="text-4xl font-bold mb-4 gradient-text">AI Ses Stüdyosu</h1>
+        <p class="text-gray-400">Metninizi doğal ve akıcı sese dönüştürün</p>
+    </div>
+
+    <!-- Ses Oluşturucu -->
+    <div class="glass p-8 mb-12">
+        <form id="generateForm" class="space-y-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Metin</label>
+                <textarea 
+                    name="text" 
+                    id="text"
+                    class="input-style w-full p-4 h-32 resize-none"
+                    placeholder="Sese dönüştürmek istediğiniz metni yazın..."
+                    maxlength="1000"
+                    required></textarea>
+                <div class="text-xs text-gray-400 mt-1">
+                    <span id="charCount">0</span>/1000 karakter
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Konuşma Hızı</label>
+                    <input type="range" name="speed" min="0.5" max="2" step="0.1" value="1" 
+                           class="w-full" id="speed">
+                    <div class="text-sm text-gray-400 mt-1">
+                        <span id="speedValue">1x</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end">
+                <button type="submit" class="btn" id="generateBtn">
+                    <span class="normal">Sese Dönüştür</span>
+                    <span class="loading hidden">
+                        <svg class="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        İşleniyor...
+                    </span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Ses Oynatıcı -->
+    <div id="audioPlayer" class="audio-card hidden">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold">Oluşturulan Ses</h3>
+            <div class="flex items-center space-x-3">
+                <button class="text-purple-400 hover:text-purple-300 transition-colors" id="downloadBtn">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div id="waveform" class="waveform"></div>
+        <div class="player-controls">
+            <button class="player-button" id="playBtn">
+                <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                </svg>
+            </button>
+            <button class="player-button" id="stopBtn">
+                <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <rect x="6" y="6" width="12" height="12" stroke-width="2"/>
+                </svg>
+            </button>
+            <div class="time-display">
+                <span id="currentTime">00:00</span> / <span id="duration">00:00</span>
+            </div>
+            <div class="volume-control">
+                <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072M12 9.5l-3-3m0 0L3 12m6-6v14"/>
+                </svg>
+                <input type="range" class="volume-slider" id="volume" min="0" max="1" step="0.05" value="1">
+            </div>
+        </div>
+    </div>
+
+    <!-- Geçmiş -->
+    <div class="mt-12">
+        <h2 class="text-2xl font-bold mb-6 gradient-text">Oluşturulan Sesler</h2>
+        <div class="grid grid-cols-1 gap-4">
+            {% for audio in user.audios[:5]|sort(attribute='created_at', reverse=true) %}
+            <div class="audio-card">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <p class="text-sm text-gray-300 line-clamp-1">{{ audio.text }}</p>
+                        <p class="text-xs text-gray-400 mt-1">{{ audio.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xs text-gray-400">{{ "%.1f"|format(audio.duration) }}s</span>
+                        <a href="{{ audio.path }}" download class="text-purple-400 hover:text-purple-300">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+                <div class="waveform" data-audio="{{ audio.path }}"></div>
+                <div class="player-controls">
+                    <button class="player-button play-btn">
+                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                        </svg>
+                    </button>
+                    <button class="player-button stop-btn">
+                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <rect x="6" y="6" width="12" height="12" stroke-width="2"/>
+                        </svg>
+                    </button>
+                    <div class="time-display">
+                        <span class="current-time">0:00</span> / <span class="duration">0:00</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072M12 9.5l-3-3m0 0L3 12m6-6v14"/>
+                        </svg>
+                        <input type="range" class="volume-slider" min="0" max="1" step="0.1" value="1">
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.min.js"></script>
+<script>
+    const form = document.getElementById('generateForm');
+    const generateBtn = document.getElementById('generateBtn');
+    const audioPlayer = document.getElementById('audioPlayer');
+    const playBtn = document.getElementById('playBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const volumeSlider = document.getElementById('volume');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const speedSlider = document.getElementById('speed');
+    const speedValue = document.getElementById('speedValue');
+    const remainingTime = document.getElementById('remainingTime');
+    const textArea = document.getElementById('text');
+    const charCount = document.getElementById('charCount');
+    
+    // WaveSurfer instance
+    let wavesurfer = WaveSurfer.create({
+        container: '#waveform',
+        waveColor: 'rgba(168, 85, 247, 0.4)',
+        progressColor: 'rgba(168, 85, 247, 0.8)',
+        cursorColor: '#fff',
+        barWidth: 2,
+        barGap: 1,
+        height: 80,
+        barRadius: 3,
+        responsive: true,
+        normalize: true,
+        interact: true,
+        backend: 'WebAudio',
+        minPxPerSec: 50,
+        partialRender: true,
+        autoScroll: true,
+        hideScrollbar: true,
+        xhr: {
+            cache: true,
+            mode: 'cors',
+            credentials: 'same-origin',
+            headers: [
+                { key: 'cache-control', value: 'public, max-age=31536000' }
+            ]
+        }
+    });
+    
+    // Karakter sayacı
+    textArea.addEventListener('input', (e) => {
+        const count = e.target.value.length;
+        charCount.textContent = count;
+    });
+
+    // Hız kontrolü
+    speedSlider.addEventListener('input', (e) => {
+        const value = e.target.value;
+        speedValue.textContent = `${value}x`;
+        wavesurfer.setPlaybackRate(parseFloat(value));
+    });
+    
+    // Ses kontrolü
+    volumeSlider.addEventListener('input', (e) => {
+        const value = e.target.value;
+        wavesurfer.setVolume(parseFloat(value));
+    });
+    
+    // Oynat/Durdur butonu
+    playBtn.addEventListener('click', () => {
+        wavesurfer.playPause();
+        const isPlaying = wavesurfer.isPlaying();
+        playBtn.innerHTML = isPlaying ? 
+            '<svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>' :
+            '<svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/></svg>';
+    });
+    
+    // Durdur butonu
+    stopBtn.addEventListener('click', () => {
+        wavesurfer.stop();
+        playBtn.innerHTML = '<svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/></svg>';
+    });
+    
+    // Dalga formunu güncelle
+    wavesurfer.on('ready', () => {
+        const duration = wavesurfer.getDuration();
+        document.getElementById('duration').textContent = formatTime(duration);
+        document.getElementById('currentTime').textContent = '00:00';
+    });
+    
+    wavesurfer.on('audioprocess', () => {
+        const currentTime = wavesurfer.getCurrentTime();
+        document.getElementById('currentTime').textContent = formatTime(currentTime);
+    });
+    
+    // Zaman formatı
+    function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = Math.floor(seconds % 60);
+        return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+
+    // Oynatma durumu değiştiğinde
+    wavesurfer.on('play', () => {
+        playBtn.innerHTML = `
+            <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+        `;
+    });
+
+    wavesurfer.on('pause', () => {
+        playBtn.innerHTML = `
+            <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+            </svg>
+        `;
+    });
+
+    wavesurfer.on('finish', () => {
+        playBtn.innerHTML = `
+            <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+            </svg>
+        `;
+    });
+
+    // Ses yükleme optimizasyonu
+    wavesurfer.on('loading', (percent) => {
+        if (percent === 100) {
+            wavesurfer.seekTo(0);
+            wavesurfer.setPlaybackRate(parseFloat(speedSlider.value));
+            wavesurfer.setVolume(parseFloat(volumeSlider.value));
+        }
+    });
+
+    // Geçmiş sesleri için dalga formları
+    document.querySelectorAll('.waveform[data-audio]').forEach((container, index) => {
+        const audioPath = container.dataset.audio;
+        const ws = WaveSurfer.create({
+            container: container,
+            waveColor: 'rgba(168, 85, 247, 0.4)',
+            progressColor: 'rgba(168, 85, 247, 0.8)',
+            cursorColor: '#fff',
+            barWidth: 2,
+            barGap: 1,
+            height: 64,
+            barRadius: 3,
+            responsive: true,
+            normalize: true,
+            interact: true,
+            backend: 'WebAudio',
+            minPxPerSec: 50,
+            partialRender: true,
+            autoScroll: true,
+            hideScrollbar: true,
+            xhr: {
+                cache: true,
+                mode: 'cors',
+                credentials: 'same-origin',
+                headers: [
+                    { key: 'cache-control', value: 'public, max-age=31536000' }
+                ]
+            }
+        });
+
+        // Ses yükleme optimizasyonu
+        ws.on('loading', (percent) => {
+            if (percent === 100) {
+                ws.seekTo(0);
+                ws.setPlaybackRate(1);
+                ws.setVolume(parseFloat(volumeSlider.value));
+            }
+        });
+        
+        ws.load(audioPath);
+        
+        const card = container.closest('.audio-card');
+        const playBtn = card.querySelector('.play-btn');
+        const stopBtn = card.querySelector('.stop-btn');
+        const volumeSlider = card.querySelector('.volume-slider');
+        const currentTime = card.querySelector('.current-time');
+        const duration = card.querySelector('.duration');
+        
+        playBtn.addEventListener('click', () => {
+            ws.playPause();
+            const isPlaying = ws.isPlaying();
+            playBtn.innerHTML = isPlaying ? 
+                '<svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>' :
+                '<svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/></svg>';
+        });
+        
+        stopBtn.addEventListener('click', () => {
+            ws.stop();
+            playBtn.innerHTML = '<svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/></svg>';
+        });
+        
+        volumeSlider.addEventListener('input', (e) => {
+            ws.setVolume(parseFloat(e.target.value));
+        });
+        
+        ws.on('ready', () => {
+            duration.textContent = formatTime(ws.getDuration());
+        });
+        
+        ws.on('audioprocess', () => {
+            currentTime.textContent = formatTime(ws.getCurrentTime());
+        });
+    });
+
+    // Form gönderimi
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const formData = new FormData(form);
+        generateBtn.disabled = true;
+        generateBtn.querySelector('.normal').classList.add('hidden');
+        generateBtn.querySelector('.loading').classList.remove('hidden');
+        
+        try {
+            const response = await fetch('/generate-audio', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                audioPlayer.classList.remove('hidden');
+                
+                // Ses dosyasını önbelleğe al
+                const audioCache = new Audio(data.audio_path);
+                audioCache.preload = 'auto';
+                audioCache.load();
+                
+                // WaveSurfer'ı yükle
+                wavesurfer.load(data.audio_path);
+                
+                remainingTime.textContent = data.remaining_seconds === 'Sınırsız' ? 
+                    '∞' : `${data.remaining_seconds} saniye`;
+                    
+                downloadBtn.onclick = () => {
+                    const link = document.createElement('a');
+                    link.href = data.audio_path;
+                    link.download = 'ses.wav';
+                    link.click();
+                };
+            } else {
+                alert(data.error || 'Bir hata oluştu');
+            }
+        } catch (error) {
+            console.error('Hata:', error);
+            alert('Bir hata oluştu');
+        } finally {
+            generateBtn.disabled = false;
+            generateBtn.querySelector('.normal').classList.remove('hidden');
+            generateBtn.querySelector('.loading').classList.add('hidden');
+        }
+    });
+</script>
+{% endblock %} 

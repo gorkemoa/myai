@@ -1,0 +1,74 @@
+{% extends "layout.html" %}
+
+{% block title %}Anasayfa - MyAI Studio{% endblock %}
+
+{% block user_info %}
+<span class="text-sm text-gray-400">
+    Kalan Token: <span class="text-purple-400">{{ user.daily_tokens }}</span>
+</span>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Hoş Geldin Mesajı -->
+    <div class="text-center mb-12">
+        <h1 class="text-4xl font-bold mb-4 gradient-text">Hoş Geldin, {{ user.username }}!</h1>
+        <p class="text-gray-400">MyAI Studio'nun yapay zeka araçlarıyla hayal gücünü gerçeğe dönüştür.</p>
+    </div>
+
+    <!-- AI Araçları -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Görsel Stüdyosu -->
+        <a href="{{ url_for('gorsel_studio') }}" class="glass p-6 hover:border-purple-500 transition-all">
+            <div class="text-center">
+                <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-purple-500 bg-opacity-20 flex items-center justify-center">
+                    <svg class="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Görsel Stüdyosu</h3>
+                <p class="text-gray-400">Yapay zeka ile hayal ettiğin görselleri oluştur</p>
+            </div>
+        </a>
+
+        <!-- Ses Stüdyosu -->
+        <a href="{{ url_for('ses_studio') }}" class="glass p-6 hover:border-purple-500 transition-all">
+            <div class="text-center">
+                <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-purple-500 bg-opacity-20 flex items-center justify-center">
+                    <svg class="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Ses Stüdyosu</h3>
+                <p class="text-gray-400">Metinlerini doğal seslere dönüştür</p>
+            </div>
+        </a>
+
+        <!-- Metin Stüdyosu -->
+        <a href="{{ url_for('metin_studio') }}" class="glass p-6 hover:border-purple-500 transition-all">
+            <div class="text-center">
+                <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-purple-500 bg-opacity-20 flex items-center justify-center">
+                    <svg class="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Metin Stüdyosu</h3>
+                <p class="text-gray-400">Yapay zeka ile içerik oluştur</p>
+            </div>
+        </a>
+    </div>
+
+    <!-- Premium Üyelik -->
+    {% if not user.is_premium %}
+    <div class="mt-12 glass p-8">
+        <div class="text-center">
+            <h2 class="text-2xl font-bold mb-4">Premium'a Yükselt</h2>
+            <p class="text-gray-400 mb-6">Sınırsız token ve daha fazla özellik için premium üyeliğe geç</p>
+            <a href="{{ url_for('premium') }}" class="btn">Premium'a Yükselt</a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}{% endblock %} 

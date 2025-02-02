@@ -1,0 +1,66 @@
+{% extends "layout.html" %}
+
+{% block title %}Profil - MyAI Studio{% endblock %}
+
+{% block user_info %}
+<span class="text-sm text-gray-400">
+    Kalan Token: <span class="text-purple-400">{{ user.daily_tokens }}</span>
+</span>
+{% endblock %}
+
+{% block content %}
+<!-- Profil Başlığı -->
+<div class="glass p-8 mb-8">
+    <div class="flex items-start justify-between">
+        <div>
+            <h1 class="text-3xl font-bold mb-2">{{ user.username }}</h1>
+            <p class="text-gray-400">{{ user.email }}</p>
+            <p class="text-sm text-gray-400 mt-2">Üyelik tarihi: {{ user.created_at.strftime('%d.%m.%Y') }}</p>
+        </div>
+        <div class="flex space-x-4">
+            <button class="btn secondary">Profili Düzenle</button>
+            {% if not user.is_premium %}
+            <a href="/premium" class="btn">Pro'ya Geç</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- İstatistikler -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+    <div class="stats-card">
+        <h3 class="text-lg font-semibold mb-2">Görsel Sayısı</h3>
+        <p class="text-3xl font-bold gradient-text">{{ user.images|length }}</p>
+        <p class="text-sm text-gray-400 mt-2">Toplam oluşturulan görsel</p>
+    </div>
+    <div class="stats-card">
+        <h3 class="text-lg font-semibold mb-2">Kalan Token</h3>
+        <p class="text-3xl font-bold gradient-text">{{ user.daily_tokens }}</p>
+        <p class="text-sm text-gray-400 mt-2">Günlük limit: {% if user.is_premium %}Sınırsız{% else %}5{% endif %}</p>
+    </div>
+    <div class="stats-card">
+        <h3 class="text-lg font-semibold mb-2">Üyelik Durumu</h3>
+        <p class="text-3xl font-bold gradient-text">{% if user.is_premium %}Premium{% else %}Ücretsiz{% endif %}</p>
+        <p class="text-sm text-gray-400 mt-2">{% if user.is_premium %}Pro özelliklere erişebilirsiniz{% else %}Pro'ya geçerek limitleri kaldırın{% endif %}</p>
+    </div>
+</div>
+
+<!-- Son Oluşturulan Görseller -->
+<div class="mb-12">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold">Son Oluşturulan Görseller</h2>
+        <a href="/galeri" class="btn secondary">Tümünü Gör</a>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {% for image in user.images[:6] %}
+        <div class="glass overflow-hidden">
+            <img src="{{ image.path }}" alt="{{ image.prompt }}" class="w-full h-48 object-cover">
+            <div class="p-4">
+                <p class="text-sm text-gray-300 line-clamp-2">{{ image.prompt }}</p>
+                <p class="text-xs text-gray-400 mt-2">{{ image.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 

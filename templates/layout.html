@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="tr" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MyAI Studio{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <script>
+        // Dark mode'u varsayılan olarak ayarla
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+    </script>
+</head>
+<body class="tech-bg dark">
+    <!-- Navigasyon -->
+    <nav class="glass border-b border-white/5 sticky top-0 z-50 backdrop-blur-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between py-4">
+                <div class="flex items-center space-x-8">
+                    <a href="/" class="text-2xl font-bold gradient-text">MyAI Studio</a>
+                    <div class="hidden md:flex space-x-6">
+                        <a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}">Studio</a>
+                        <a href="/galeri" class="nav-link {% if request.path == '/galeri' %}active{% endif %}">Galeri</a>
+                        <a href="/gorsel-studio" class="nav-link {% if request.path == '/gorsel-studio' %}active{% endif %}">Görsel</a>
+                        <a href="/ses-studio" class="nav-link {% if request.path == '/ses-studio' %}active{% endif %}">Ses</a>
+                        <a href="/metin-studio" class="nav-link {% if request.path == '/metin-studio' %}active{% endif %}">Metin</a>
+                        <a href="/premium" class="nav-link {% if request.path == '/premium' %}active{% endif %}">Pro</a>
+                    </div>
+                </div>
+                {% if session.get('user_id') %}
+                <div class="flex items-center space-x-4">
+                    {% block user_info %}{% endblock %}
+                    <div class="relative">
+                        <a href="/profil" class="flex items-center space-x-2 nav-link">
+                            <span>{{ user.username }}</span>
+                            {% if user.is_premium %}
+                            <span class="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs px-2 py-1 rounded-full">PRO</span>
+                            {% endif %}
+                        </a>
+                    </div>
+                </div>
+                {% else %}
+                <div>
+                    <a href="/giris" class="btn">Giriş Yap</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Ana İçerik -->
+    <div class="container mx-auto px-4 py-12">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Footer -->
+    <footer class="py-8 border-t border-white/5">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-sm text-gray-400">© 2024 MyAI Studio. Tüm hakları saklıdır.</p>
+        </div>
+    </footer>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html> 

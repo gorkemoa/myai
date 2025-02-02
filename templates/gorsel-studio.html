@@ -1,0 +1,219 @@
+{% extends "layout.html" %}
+
+{% block title %}Görsel Stüdyosu - MyAI Studio{% endblock %}
+
+{% block user_info %}
+<span class="text-sm text-gray-400">
+    Kalan Token: <span class="text-purple-400">{{ user.daily_tokens }}</span>
+</span>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Başlık -->
+    <div class="text-center mb-12">
+        <h1 class="text-4xl font-bold mb-4 gradient-text">AI Görsel Stüdyosu</h1>
+        <p class="text-gray-400">Yapay zeka ile hayal ettiğiniz görselleri oluşturun</p>
+    </div>
+
+    <!-- Görsel Oluşturucu -->
+    <div class="glass p-8 mb-12">
+        <form id="generateForm" class="space-y-6">
+            <!-- Türkçe Prompt -->
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Türkçe Prompt</label>
+                <textarea 
+                    name="prompt" 
+                    id="turkishPrompt"
+                    rows="3" 
+                    class="input-style w-full p-4"
+                    placeholder="Görseli Türkçe olarak detaylı bir şekilde açıklayın..."
+                    required></textarea>
+            </div>
+
+            <!-- Çeviri ve Geliştirme Butonu -->
+            <div class="flex justify-end space-x-4">
+                <button type="button" class="btn" id="translateBtn">
+                    <span class="normal">Çevir ve Geliştir</span>
+                    <span class="loading hidden">
+                        <svg class="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        İşleniyor...
+                    </span>
+                </button>
+            </div>
+
+            <!-- Geliştirilmiş Türkçe Prompt -->
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Geliştirilmiş Türkçe Prompt</label>
+                <textarea 
+                    id="enhancedTurkishPrompt"
+                    rows="3" 
+                    class="input-style w-full p-4"
+                    placeholder="Geliştirilmiş Türkçe prompt burada görünecek..."
+                    readonly></textarea>
+            </div>
+
+            <!-- Geliştirilmiş İngilizce Prompt -->
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Geliştirilmiş İngilizce Prompt</label>
+                <textarea 
+                    id="enhancedEnglishPrompt"
+                    rows="3" 
+                    class="input-style w-full p-4"
+                    placeholder="Geliştirilmiş İngilizce prompt burada görünecek..."
+                    readonly></textarea>
+            </div>
+
+            <!-- Görsel Oluştur Butonu -->
+            <div class="flex justify-end">
+                <button type="submit" class="btn" id="generateBtn">
+                    <span class="normal">Görsel Oluştur</span>
+                    <span class="loading hidden">
+                        <svg class="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        İşleniyor...
+                    </span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Oluşturulan Görsel -->
+    <div id="imageOutput" class="glass p-8 mb-12 hidden">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold">Oluşturulan Görsel</h3>
+            <button class="text-purple-400 hover:text-purple-300 transition-colors" id="downloadBtn">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                </svg>
+            </button>
+        </div>
+        <img id="generatedImage" src="" alt="Oluşturulan görsel" class="w-full rounded-lg">
+    </div>
+
+    <!-- Geçmiş -->
+    <div class="mt-12">
+        <h2 class="text-2xl font-bold mb-6 gradient-text">Son Oluşturulan Görseller</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for image in user.images[:6]|sort(attribute='created_at', reverse=true) %}
+            <div class="glass overflow-hidden">
+                <img src="/{{ image.path }}" alt="AI tarafından oluşturuldu" class="w-full h-48 object-cover">
+                <div class="p-4">
+                    <p class="text-sm text-gray-300 line-clamp-2">{{ image.prompt }}</p>
+                    <p class="text-xs text-gray-400 mt-2">{{ image.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('generateForm');
+    const turkishPrompt = document.getElementById('turkishPrompt');
+    const enhancedTurkishPrompt = document.getElementById('enhancedTurkishPrompt');
+    const enhancedEnglishPrompt = document.getElementById('enhancedEnglishPrompt');
+    const translateBtn = document.getElementById('translateBtn');
+    const generateBtn = document.getElementById('generateBtn');
+    const imageOutput = document.getElementById('imageOutput');
+    const generatedImage = document.getElementById('generatedImage');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    // Çeviri ve geliştirme işlemi
+    translateBtn.addEventListener('click', async () => {
+        const turkishText = turkishPrompt.value.trim();
+        if (!turkishText) {
+            alert('Lütfen Türkçe prompt giriniz');
+            return;
+        }
+
+        translateBtn.disabled = true;
+        translateBtn.querySelector('.normal').classList.add('hidden');
+        translateBtn.querySelector('.loading').classList.remove('hidden');
+
+        try {
+            const response = await fetch('/enhance-prompt', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ prompt: turkishText })
+            });
+
+            const data = await response.json();
+            enhancedTurkishPrompt.value = data.turkish;
+            enhancedEnglishPrompt.value = data.english;
+        } catch (error) {
+            console.error('Hata:', error);
+            alert('Çeviri ve geliştirme sırasında bir hata oluştu');
+        } finally {
+            translateBtn.disabled = false;
+            translateBtn.querySelector('.normal').classList.remove('hidden');
+            translateBtn.querySelector('.loading').classList.add('hidden');
+        }
+    });
+
+    // Görsel oluşturma
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        if (!enhancedEnglishPrompt.value.trim()) {
+            alert('Lütfen önce metni çevirip geliştirin');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('prompt', enhancedEnglishPrompt.value.trim());
+        
+        generateBtn.disabled = true;
+        generateBtn.querySelector('.normal').classList.add('hidden');
+        generateBtn.querySelector('.loading').classList.remove('hidden');
+        imageOutput.classList.add('hidden');
+        
+        try {
+            const response = await fetch('/generate', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                generatedImage.src = '/' + data.image_path;
+                imageOutput.classList.remove('hidden');
+                
+                downloadBtn.onclick = () => {
+                    const link = document.createElement('a');
+                    link.href = '/' + data.image_path;
+                    link.download = 'gorsel.png';
+                    link.click();
+                };
+                
+                // Sayfayı yenile
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            } else {
+                alert(data.error || 'Bir hata oluştu');
+            }
+        } catch (error) {
+            console.error('Hata:', error);
+            alert('Bir hata oluştu');
+        } finally {
+            generateBtn.disabled = false;
+            generateBtn.querySelector('.normal').classList.remove('hidden');
+            generateBtn.querySelector('.loading').classList.add('hidden');
+        }
+    });
+});
+</script>
+{% endblock %} 

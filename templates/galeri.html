@@ -1,0 +1,410 @@
+{% extends "layout.html" %}
+
+{% block title %}Galeri - MyAI Studio{% endblock %}
+
+{% block styles %}
+<style>
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.page-title {
+    font-size: 3rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 1rem;
+}
+
+.filter-container {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.filter-btn:hover, .filter-btn.active {
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
+}
+
+.filter-btn i {
+    margin-right: 0.5rem;
+}
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.gallery-item {
+    position: relative;
+    border-radius: 1.5rem;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.gallery-item:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.gallery-item img {
+    width: 100%;
+    height: 350px;
+    object-fit: cover;
+    transition: all 0.5s ease;
+}
+
+.gallery-item:hover img {
+    transform: scale(1.1);
+}
+
+.gallery-item-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1.5rem;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+    color: white;
+    transform: translateY(100%);
+    transition: all 0.3s ease;
+}
+
+.gallery-item:hover .gallery-item-info {
+    transform: translateY(0);
+}
+
+.gallery-item-prompt {
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+    opacity: 0.9;
+}
+
+.gallery-item-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.gallery-item-date {
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0.5rem;
+    border-radius: 50%;
+    backdrop-filter: blur(5px);
+}
+
+.action-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.2);
+}
+
+.favorite-btn.active svg {
+    fill: #ec4899;
+    filter: drop-shadow(0 0 5px #ec4899);
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+}
+
+.modal-content {
+    position: relative;
+    max-width: 90%;
+    max-height: 90vh;
+    margin: 2rem auto;
+    text-align: center;
+}
+
+.modal-image {
+    max-height: 80vh;
+    border-radius: 1rem;
+    box-shadow: 0 0 50px rgba(99, 102, 241, 0.3);
+}
+
+.modal-close {
+    position: absolute;
+    top: -2rem;
+    right: -2rem;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+    transform: rotate(90deg);
+    color: #ec4899;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 3rem;
+}
+
+.pagination-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pagination-btn:hover:not(.disabled) {
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
+}
+
+.pagination-info {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+}
+
+.pagination-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+    
+    .gallery-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1rem;
+    }
+    
+    .gallery-item img {
+        height: 280px;
+    }
+    
+    .page-title {
+        font-size: 2rem;
+    }
+    
+    .filter-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block user_info %}
+<span class="text-sm text-gray-400">
+    Kalan Token: <span class="text-purple-400">{{ user.daily_tokens }}</span>
+</span>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1 class="page-title">Galeri</h1>
+        <p class="text-gray-400">Oluşturulan görselleri keşfedin</p>
+    </div>
+
+    <div class="filter-container">
+        <a href="{{ url_for('galeri', filter='all') }}" 
+           class="filter-btn {% if request.args.get('filter') == 'all' or not request.args.get('filter') %}active{% endif %}">
+            <i class="fas fa-images"></i>Tümü
+        </a>
+        <a href="{{ url_for('galeri', filter='my') }}" 
+           class="filter-btn {% if request.args.get('filter') == 'my' %}active{% endif %}">
+            <i class="fas fa-user"></i>Benim Görsellerim
+        </a>
+        <a href="{{ url_for('galeri', filter='favorites') }}" 
+           class="filter-btn {% if request.args.get('filter') == 'favorites' %}active{% endif %}">
+            <i class="fas fa-heart"></i>Favorilerim
+        </a>
+        <a href="{{ url_for('galeri', filter='popular') }}" 
+           class="filter-btn {% if request.args.get('filter') == 'popular' %}active{% endif %}">
+            <i class="fas fa-fire"></i>Popüler
+        </a>
+    </div>
+
+    <div class="gallery-grid">
+        {% for image in images.items %}
+        <div class="gallery-item" data-image-id="{{ image.id }}">
+            <img src="{{ image.path }}" alt="{{ image.prompt }}" loading="lazy" onclick="openModal(this.src)">
+            <div class="gallery-item-info">
+                <p class="gallery-item-prompt">{{ image.prompt }}</p>
+                <div class="gallery-item-actions">
+                    <span class="gallery-item-date">{{ image.created_at }}</span>
+                    <div class="action-buttons">
+                        <button class="action-btn favorite-btn {% if image.is_favorite %}active{% endif %}" 
+                                onclick="toggleFavorite({{ image.id }}, this)">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                            </svg>
+                        </button>
+                        <a href="{{ image.path }}" download class="action-btn">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="pagination">
+        {% if images.has_prev %}
+        <a href="{{ url_for('galeri', page=images.prev_num, filter=request.args.get('filter', 'all')) }}" 
+           class="pagination-btn">
+            <i class="fas fa-chevron-left mr-2"></i>Önceki
+        </a>
+        {% endif %}
+        
+        <span class="pagination-info">
+            Sayfa {{ images.page }} / {{ images.pages }}
+        </span>
+        
+        {% if images.has_next %}
+        <a href="{{ url_for('galeri', page=images.next_num, filter=request.args.get('filter', 'all')) }}" 
+           class="pagination-btn">
+            Sonraki<i class="fas fa-chevron-right ml-2"></i>
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div id="imageModal" class="modal" onclick="closeModal()">
+    <div class="modal-content">
+        <span class="modal-close">&times;</span>
+        <img id="modalImage" class="modal-image" src="" alt="Büyük görsel">
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function openModal(imageSrc) {
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImage');
+    modal.style.display = 'flex';
+    modalImg.src = imageSrc;
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+    document.getElementById('imageModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+function toggleFavorite(imageId, button) {
+    fetch('/toggle-favorite', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ image_id: imageId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            button.classList.toggle('active');
+            
+            // Favoriler filtresindeyken, favoriden çıkarılan görseli animasyonlu bir şekilde gizle
+            if (window.location.href.includes('filter=favorites') && !data.is_favorite) {
+                const galleryItem = button.closest('.gallery-item');
+                galleryItem.style.transition = 'all 0.5s ease';
+                galleryItem.style.opacity = '0';
+                galleryItem.style.transform = 'scale(0.8)';
+                setTimeout(() => {
+                    galleryItem.style.display = 'none';
+                }, 500);
+            }
+        }
+    })
+    .catch(error => console.error('Hata:', error));
+}
+
+// Modal dışına tıklandığında kapatma
+document.getElementById('imageModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeModal();
+    }
+});
+
+// ESC tuşu ile modalı kapatma
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeModal();
+    }
+});
+
+// Sayfa yüklendiğinde görsel animasyonları
+document.addEventListener('DOMContentLoaded', function() {
+    const items = document.querySelectorAll('.gallery-item');
+    items.forEach((item, index) => {
+        item.style.opacity = '0';
+        item.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            item.style.transition = 'all 0.5s ease';
+            item.style.opacity = '1';
+            item.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %} 

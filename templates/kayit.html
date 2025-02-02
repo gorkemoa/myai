@@ -1,0 +1,147 @@
+{% extends "layout.html" %}
+
+{% block title %}Kayıt - MyAI Studio{% endblock %}
+
+{% block extra_styles %}
+.auth-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 24px;
+    padding: 2rem;
+    backdrop-filter: blur(12px);
+    max-width: 400px;
+    width: 100%;
+}
+.social-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 0.75rem;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+.social-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(168, 85, 247, 0.3);
+}
+.divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 1.5rem 0;
+}
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.divider span {
+    margin: 0 0.5rem;
+}
+{% endblock %}
+
+{% block content %}
+<div class="min-h-[80vh] flex items-center justify-center">
+    <div class="auth-card">
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-bold mb-2">MyAI Studio'ya Katılın</h1>
+            <p class="text-gray-400">Yeni bir hesap oluşturun</p>
+        </div>
+
+        {% if error %}
+        <div class="bg-red-500 bg-opacity-10 border border-red-500 text-red-500 px-4 py-3 rounded mb-6">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="{% if category == 'error' %}bg-red-500 bg-opacity-10 border border-red-500 text-red-500{% else %}bg-green-500 bg-opacity-10 border border-green-500 text-green-500{% endif %} px-4 py-3 rounded mb-6">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Sosyal Medya ile Kayıt -->
+        <div class="space-y-4 mb-6">
+            <a href="{{ url_for('google.login') }}" class="social-btn">
+                <img src="{{ url_for('static', filename='images/google.svg') }}" alt="Google" class="w-5 h-5 mr-3">
+                Google ile Kayıt Ol
+            </a>
+            <a href="{{ url_for('facebook.login') }}" class="social-btn">
+                <img src="{{ url_for('static', filename='images/facebook.svg') }}" alt="Facebook" class="w-5 h-5 mr-3">
+                Facebook ile Kayıt Ol
+            </a>
+        </div>
+
+        <div class="divider">
+            <span>veya</span>
+        </div>
+
+        <!-- Email ile Kayıt Formu -->
+        <form method="POST" action="{{ url_for('kayit') }}" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Kullanıcı Adı</label>
+                <input 
+                    type="text" 
+                    name="username" 
+                    class="input-style w-full p-3"
+                    required
+                    minlength="3"
+                    maxlength="50">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">E-posta</label>
+                <input 
+                    type="email" 
+                    name="email" 
+                    class="input-style w-full p-3"
+                    required>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Şifre</label>
+                <input 
+                    type="password" 
+                    name="password" 
+                    class="input-style w-full p-3"
+                    required
+                    minlength="6">
+                <p class="text-xs text-gray-400 mt-1">En az 6 karakter</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Şifre Tekrar</label>
+                <input 
+                    type="password" 
+                    name="password_confirm" 
+                    class="input-style w-full p-3"
+                    required
+                    minlength="6">
+            </div>
+            <div class="flex items-center">
+                <input type="checkbox" name="terms" id="terms" class="mr-2" required>
+                <label for="terms" class="text-sm text-gray-300">
+                    <a href="#" class="text-purple-400 hover:text-purple-300">Kullanım şartlarını</a> ve 
+                    <a href="#" class="text-purple-400 hover:text-purple-300">gizlilik politikasını</a> kabul ediyorum
+                </label>
+            </div>
+            <button type="submit" class="btn w-full">
+                Kayıt Ol
+            </button>
+        </form>
+
+        <div class="text-center mt-6">
+            <p class="text-gray-400">
+                Zaten hesabınız var mı? 
+                <a href="{{ url_for('giris') }}" class="text-purple-400 hover:text-purple-300">Giriş yapın</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %} 

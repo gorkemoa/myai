@@ -1,0 +1,208 @@
+:root {
+    --bg-dark: #0a0a0f;
+    --text-dark: #ffffff;
+    --card-dark: rgba(255, 255, 255, 0.03);
+    --border-dark: rgba(255, 255, 255, 0.05);
+}
+
+/* Dark mode varsayılan stiller */
+html.dark {
+    background-color: var(--bg-dark);
+    color: var(--text-dark);
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-dark);
+    min-height: 100vh;
+}
+
+.tech-bg {
+    background: 
+        radial-gradient(circle at top right, rgba(168, 85, 247, 0.15) 0%, transparent 70%),
+        radial-gradient(circle at bottom left, rgba(236, 72, 153, 0.15) 0%, transparent 70%),
+        radial-gradient(circle at center, rgba(124, 58, 237, 0.1) 0%, transparent 50%);
+}
+
+.gradient-text {
+    background: linear-gradient(135deg, #C084FC, #F472B6);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+/* Dark mode için özel stiller */
+.dark .glass {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dark .nav-link {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.dark .nav-link:hover {
+    color: white;
+    background: rgba(168, 85, 247, 0.1);
+}
+
+.dark .nav-link.active {
+    color: white;
+    background: rgba(168, 85, 247, 0.1);
+}
+
+.dark .input-style {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.dark .input-style:focus {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: #A855F7;
+}
+
+.btn {
+    background: linear-gradient(135deg, #A855F7, #EC4899);
+    color: white;
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(168, 85, 247, 0.4);
+}
+
+.btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.input-style {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: white;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+    backdrop-filter: blur(12px);
+}
+
+.input-style:focus {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: #A855F7;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2);
+}
+
+/* Auth sayfaları için stiller */
+.auth-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 24px;
+    padding: 2rem;
+    backdrop-filter: blur(12px);
+    max-width: 400px;
+    width: 100%;
+}
+
+.social-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 0.75rem;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.social-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(168, 85, 247, 0.3);
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 1.5rem 0;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.divider span {
+    margin: 0 0.5rem;
+}
+
+/* Premium sayfası için stiller */
+.pricing-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 24px;
+    padding: 2rem;
+    transition: all 0.3s ease;
+}
+
+.pricing-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(168, 85, 247, 0.3);
+    box-shadow: 0 12px 36px rgba(168, 85, 247, 0.15);
+}
+
+.feature-list li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.feature-list li svg {
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+}
+
+/* Metin stüdyosu için stiller */
+.text-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.text-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(168, 85, 247, 0.3);
+    box-shadow: 0 8px 24px rgba(168, 85, 247, 0.15);
+}
+
+.template-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.template-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(168, 85, 247, 0.3);
+}
+
+.template-card.selected {
+    background: rgba(168, 85, 247, 0.1);
+    border-color: rgba(168, 85, 247, 0.5);
+} 
